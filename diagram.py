@@ -2,17 +2,39 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.dates as mdates
 import csv
+import spidev
 import time
+
 from datetime import datetime
 
 
 LOG_FILENAME = 'temperature_log.csv'
 
 # Simulated temperature read function (replace with your sensor code)
-def get_temperature():
-    # Replace this with actual sensor reading
-    import random
-    return 20 + random.uniform(-2, 2)
+def get_temperature(spi):
+    raw = spi.readbytes(4)
+    if len(raw) != 4:
+        return float('nan')
+
+    value = (raw[0] << 24) | (raw[1] << 16) | (raw[2] << 8) | raw[3]
+
+    # Check for error bit (D16)
+    if value & 0x00010000:
+        return float('nan')  # Error reading sensor
+
+    # Extract temperature (14-bit signed)
+    temp_raw = (value >> 18) & 0x3FFF
+    if temp_raw & 0x2000:  # Negative value
+        temp_raw -= 0x4000
+
+    temp_c = temp_raw * 0.25
+    return temp_c
+
+spi1 = spidev.SpiDev()
+spi1.open(0, 0)  #
+spi1.max_speed_hz = 5000000
+spi1.mode = 0b00
+
 
 # Initialize CSV log file with header
 with open(LOG_FILENAME, mode='w', newline='') as f:
@@ -23,12 +45,9 @@ times = []
 temps = []
 
 def update(frame):
-    temp = get_temperature()
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    temp = get_temperature(spi1)
 
-    # In update(), after reading timestamp:
     timestamp = datetime.now()
-    # Append datetime object (not string)
     times.append(timestamp)
     temps.append(temp)
 
