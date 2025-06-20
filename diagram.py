@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.dates as mdates
 import csv
 import time
 from datetime import datetime
+
+# In update(), after reading timestamp:
+timestamp = datetime.now()
+
+# Append datetime object (not string)
+times.append(timestamp)
 
 LOG_FILENAME = 'temperature_log.csv'
 
@@ -42,11 +49,18 @@ def update(frame):
 
     # Clear and plot
     plt.cla()
-    plt.plot(temps, marker='o')
+    plt.plot(times, temps, marker='o')
     plt.title('Temperature Over Time')
     plt.ylabel('Temperature (°C)')
-    plt.xlabel('Samples (approx every 15 sec)')
+    plt.xlabel('Time (HH:MM)')
     plt.grid(True)
+
+    # Format x-axis to show HH:MM
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+
+    # Optional: auto-format date labels to avoid overlap
+    plt.gcf().autofmt_xdate()
+
     plt.tight_layout()
 
 # Initialize last_log_time attribute
