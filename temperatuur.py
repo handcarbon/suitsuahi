@@ -1,48 +1,22 @@
-
-📜 Python Code to Read Temperature from MAX31855
-python
-Copy
-Edit
-import spidev
+import board
+import digitalio
+import adafruit_max31855
 import time
 
-# SPI channel 0, device 0 (use 1 if it's on CE1)
-SPI_BUS = 0
-SPI_DEVICE = 0
+# SPI bus (shared)
+spi = board.SPI()
 
-def read_max31855():
-    spi = spidev.SpiDev()
-    spi.open(SPI_BUS, SPI_DEVICE)
-    spi.max_speed_hz = 5000000
-    spi.mode = 0b00
+# CS pins for each MAX31855
+cs1 = digitalio.DigitalInOut(board.D8)  # GPIO8
+cs2 = digitalio.DigitalInOut(board.D7)  # GPIO7
 
-    # Read 4 bytes from MAX31855
-    raw = spi.readbytes(4)
-    spi.close()
-
-    # Convert to integer
-    value = int.from_bytes(raw, 'big')
-
-    # Check for error bit (D16)
-    if value & 0x00010000:
-        return None  # Fault detected
-
-    # Extract temperature (bits 31-18)
-    temp_data = (value >> 18) & 0x3FFF
-    if temp_data & 0x2000:  # Negative value
-        temp_data -= 0x4000
-
-    temperature = temp_data * 0.25
-    return temperature
+# Create sensor objects
+sensor1 = adafruit_max31855.MAX31855(spi, cs1)
+sensor2 = adafruit_max31855.MAX31855(spi, cs2)
 
 # Read loop
-try:
-    while True:
-        temp = read_max31855()
-        if temp is not None:
-            print(f"Temperature: {temp:.2f} °C")
-        else:
-            print("Sensor error or disconnected")
-        time.sleep(1)
-except KeyboardInterrupt:
-    print("Stopped.")
+while True:
+    print("Sensor 1: {:.2f} °C".format(sensor1.temperature))
+    print("Sensor 2: {:.2f} °C".format(sensor2.temperature))
+    print("-" * 30)
+    time.sleep(1)
