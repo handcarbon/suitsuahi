@@ -5,11 +5,6 @@ import csv
 import time
 from datetime import datetime
 
-# In update(), after reading timestamp:
-timestamp = datetime.now()
-
-# Append datetime object (not string)
-times.append(timestamp)
 
 LOG_FILENAME = 'temperature_log.csv'
 
@@ -31,7 +26,9 @@ def update(frame):
     temp = get_temperature()
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    # Append data to lists
+    # In update(), after reading timestamp:
+    timestamp = datetime.now()
+    # Append datetime object (not string)
     times.append(timestamp)
     temps.append(temp)
 
