@@ -68,6 +68,6 @@ update.last_log_time = 0
 
 # Set up matplotlib animation
 fig = plt.figure()
-ani = animation.FuncAnimation(fig, update, interval=1000)  # update every 1 sec
+ani = animation.FuncAnimation(fig, update, interval=15000)  # update every 15 sec
 
 plt.show()
